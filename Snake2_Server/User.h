@@ -15,6 +15,6 @@ struct User {
 	sf::IpAddress ip;
 	unsigned short port;
 	int sID;
-	Message message(const Message &m, vector<Snake> &game_data, Message &broadcast);
+	Message message(const Message &m, vector<ServerSnake> &game_data, Message &broadcast);
 };
 

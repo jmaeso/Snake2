@@ -5,7 +5,8 @@
 #include "const.h"
 #include <thread>
 #include "Comm.h"
-#include "Ships.h"
+#include "Snakes.h"
+
 using namespace std;
 
 enum scenes {
@@ -31,7 +32,7 @@ private:
 	Comm *C;
 	thread T;
 	sf::Clock deltaClock;
-	Ships *S;
+	Snakes *S;
 	sf::Text joiningText;
 };
 

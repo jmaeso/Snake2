@@ -29,6 +29,6 @@ private:
 	sf::UdpSocket socket;
 	unsigned port;
 	unordered_map<string,User> users;
-	vector<Snake> game_data;
+	vector<ServerSnake> game_data;
 };
 

@@ -30,7 +30,7 @@ void Server::run()
 	unsigned short senderPort;
 	sf::Clock clock;
 	int previous = clock.getElapsedTime().asMilliseconds();
-	game_data = vector<Snake>(0);
+	game_data = vector<ServerSnake>(0);
 	while (true) {
 		sf::Socket::Status s = socket.receive(in, sizeof(in), received, sender, senderPort);
 		if (received != 0) {
@@ -45,7 +45,7 @@ void Server::run()
 					newUser.port = senderPort;
 					newUser.sID = game_data.size();
 					users[UUID] = newUser;
-					Snake tempSnake;
+					ServerSnake tempSnake;
 					tempSnake.parts = std::vector<Part>(0);
 					int div = game_data.size() % 4;
 					int x0 = (rand() % (WIDTH / 2 - MIN_PARTS)) + MIN_PARTS;
@@ -84,7 +84,7 @@ void Server::run()
 				}
 				next_update += steps;
 				if (next_update > UPDATEEVERY) {
-					//broadcastAll(Protocol::update(next_move,game_data));
+					broadcastAll(Protocol::update(game_data));
 					next_update -= UPDATEEVERY;
 				}
 			}

@@ -4,17 +4,17 @@
 
 Game::Game()
 {
-	width = 800;
-	height = 600;
-	app.create(sf::VideoMode(width, height), "GAME", sf::Style::Titlebar|sf::Style::Close);
+	width = SCREEN_WIDTH;
+	height = SCREEN_HEIGHT;
+	app.create(sf::VideoMode(width, height), "Snake", sf::Style::Titlebar|sf::Style::Close);
 	app.setVerticalSyncEnabled(true);
 	scene = SCENE_JOINING;
 	font = sf::Font();
-	/*font.loadFromFile("madpixels.otf");
+	font.loadFromFile("madpixels.otf");
 	joiningText = sf::Text("Joining...", font, height / 30);
 	joiningText.setOrigin({ joiningText.getLocalBounds().width / 2.0f,joiningText.getLocalBounds().height / 2.0f });
 	joiningText.setPosition({ width / 2.0f,height / 2.2f });
-	joiningText.setColor(sf::Color::Red);*/
+	joiningText.setColor(sf::Color::Red);
 	S = NULL;
 	C = new Comm(SERVERIP);
 	T = thread(&Comm::init, C);
@@ -53,17 +53,19 @@ void Game::run()
 				if (scene == SCENE_GAME) {
 					if (event.mouseButton.button == sf::Mouse::Left)
 					{
-						int k = S->click(event.mouseButton.x, event.mouseButton.y);
-						if (k != -1) C->send(Protocol::kill(k));
+						
 					}
 				}
 			} else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Escape || event.key.alt && event.key.code == sf::Keyboard::F4) {
 					app.close();
 				}
+				else if (S != NULL) {
+					if (event.key.code == sf::Keyboard::Up) { S->SetDirection(UP); }
+				}
 			}
 		}
-		app.clear(sf::Color(255,255,255,128));
+		app.clear(sf::Color(0,0,0));
 		if (scene == SCENE_JOINING) {
 			drawJoining();
 		}
@@ -85,9 +87,13 @@ void Game::drawJoining()
 		while (!C->empty()) {
 			Message m = C->poll();
 			if (m.t == Message::JOIN_ACK) {
-				//S = new Ships(m.As.join_ack.ships, m.As.join_ack.shipCount);
-				cout << m.As.join_ack.snakeID << ", " << m.As.join_ack.gs.numPlayers << endl;
-				system("PAUSE");
+				S = new Snakes(m.As.join_ack.gs, m.As.join_ack.snakeID);
+				for (int i = 0; i < m.As.join_ack.gs.numPlayers; i++)
+				{
+					for (int j = 0; j < m.As.join_ack.gs.players[i].numParts; j++) {
+						cout << (int)m.As.join_ack.gs.players[i].parts[j].x << ", " << (int)m.As.join_ack.gs.players[i].parts[j].y << endl;
+					}
+				}
 				break;
 			}
 		}
@@ -99,7 +105,7 @@ void Game::updateGame(sf::Time dt) {
 	while (!C->empty()) {
 		Message m = C->poll();
 		if (m.t == Message::UPDATE) {
-			//S->sync(m.As.update.ships, m.As.update.shipCount, m.As.update.delta);
+			S->sync(m.As.update.gs);
 		}
 		else if (m.t == Message::KILL_BC) {
 			S->kill(m.As.kill_bc.sid);
@@ -108,5 +114,6 @@ void Game::updateGame(sf::Time dt) {
 }
 
 void Game::drawGame() {
+	//cout << "p" << endl;
 	app.draw(*S);
 }

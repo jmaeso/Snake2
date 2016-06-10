@@ -1,6 +1,6 @@
 #include "User.h"
 
-Message User::message(const Message & m, vector<Snake> &game_data, Message & broadcast)
+Message User::message(const Message & m, vector<ServerSnake> &game_data, Message & broadcast)
 {
 	Message res;
 	res.t = Message::NONE;

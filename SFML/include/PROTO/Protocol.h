@@ -5,6 +5,8 @@
 
 const unsigned MAX_PLAYERS = 4;
 const unsigned MAX_PARTS = 55;
+const unsigned WIDTH = 40;
+const unsigned HEIGHT = 30;
 
 enum direction_t {RIGHT, LEFT, UP, DOWN, MAX_DIR};
 
@@ -13,7 +15,7 @@ struct Part {
 	char y;
 };
 
-struct Snake {
+struct ServerSnake {
 	std::vector<Part> parts;
 	direction_t direction;
 };
@@ -29,28 +31,6 @@ struct GameState {
 	int numPlayers;
 	SnakeData players[MAX_PLAYERS];
 };
-
-//TEMPORAL, PENDING TO ERASE
-struct ship_data {
-	char16_t x;
-	char16_t y;
-	char type;
-	char id;
-	char16_t speed;
-};
-
-enum ship_t {
-	SHIP_0,
-	SHIP_1,
-	SHIP_2,
-	SHIP_3,
-	SHIP_4,
-	SHIP_5,
-	SHIP_MAX,
-	SHIP_LEFT = 8,
-	SHIP_RIGHT = 16
-};
-//UNTIL HERE
 
 struct Message {
 	enum Type {
@@ -73,11 +53,9 @@ struct Message {
 			GameState gs;
 			int snakeID;
 		} join_ack;
-		/*struct {
-			int delta;
-			int shipCount;
-			ship_data ships[MAXSHIP];
-		} update;*/
+		struct {
+			GameState gs;
+		} update;
 		struct {
 			int sid;
 		} kill;
@@ -97,8 +75,8 @@ public:
 	static const char* encode(const Message &m);
 	static Message make(Message::Type type);
 	static Message join();
-	static Message join_ack(const std::vector<Snake> &data, int id);
-	//static Message update(int delta, const std::vector<ship_data> &data);
+	static Message join_ack(const std::vector<ServerSnake> &data, int id);
+	static Message update(const std::vector<ServerSnake> &data);
 	static Message kill(int sid);
 	static Message kill_ack();
 	static Message kill_bc(int sid);

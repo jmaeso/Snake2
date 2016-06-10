@@ -24,7 +24,7 @@ Message Protocol::join()
 	return m;
 }
 
-Message Protocol::join_ack(const std::vector<Snake> &data, int id)
+Message Protocol::join_ack(const std::vector<ServerSnake> &data, int id)
 {
 	Message m = make(Message::JOIN_ACK);
 	m.As.join_ack.snakeID = id;
@@ -40,16 +40,20 @@ Message Protocol::join_ack(const std::vector<Snake> &data, int id)
 	return m;
 }
 
-/*Message Protocol::update(int delta, const std::vector<ship_data>& data)
+Message Protocol::update(const std::vector<ServerSnake> &data)
 {
 	Message m = make(Message::UPDATE);
-	m.As.update.delta = delta;
-	m.As.update.shipCount = data.size();
+	m.As.join_ack.gs.numPlayers = data.size();
 	for (unsigned i = 0; i < data.size(); ++i) {
-		m.As.update.ships[i] = data[i];
+		m.As.join_ack.gs.players[i].direction = data[i].direction;
+		m.As.join_ack.gs.players[i].numParts = data[i].parts.size();
+		m.As.join_ack.gs.players[i].uID = i;
+		for (unsigned int j = 0; j < data[i].parts.size(); j++) {
+			m.As.join_ack.gs.players[i].parts[j] = data[i].parts[j];
+		}
 	}
 	return m;
-}*/
+}
 
 Message Protocol::kill(int sid)
 {
