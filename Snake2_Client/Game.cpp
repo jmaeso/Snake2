@@ -7,7 +7,8 @@ Game::Game()
 	width = SCREEN_WIDTH;
 	height = SCREEN_HEIGHT;
 	app.create(sf::VideoMode(width, height), "Snake", sf::Style::Titlebar|sf::Style::Close);
-	app.setVerticalSyncEnabled(true);
+	app.setFramerateLimit(60);
+	//app.setVerticalSyncEnabled(true);
 	scene = SCENE_JOINING;
 	font = sf::Font();
 	font.loadFromFile("madpixels.otf");
@@ -61,7 +62,23 @@ void Game::run()
 					app.close();
 				}
 				else if (S != NULL) {
-					if (event.key.code == sf::Keyboard::Up) { S->SetDirection(UP); }
+					if (event.key.code == sf::Keyboard::Up) {
+						S->SetDirection(UP); 
+						C->send(Protocol::move(UP));
+					}
+					else if (event.key.code == sf::Keyboard::Down) {
+						S->SetDirection(DOWN); 
+						C->send(Protocol::move(DOWN));
+					}
+					else if (event.key.code == sf::Keyboard::Left) { 
+						S->SetDirection(LEFT);
+						C->send(Protocol::move(LEFT));
+					}
+					else if (event.key.code == sf::Keyboard::Right) { 
+						S->SetDirection(RIGHT);
+						C->send(Protocol::move(RIGHT));
+					}
+
 				}
 			}
 		}
@@ -90,8 +107,9 @@ void Game::drawJoining()
 				S = new Snakes(m.As.join_ack.gs, m.As.join_ack.snakeID);
 				for (int i = 0; i < m.As.join_ack.gs.numPlayers; i++)
 				{
+					//cout << "NumPlayer: " << i << "   Direction: " << (int)m.As.join_ack.gs.players[i].direction << endl;
 					for (int j = 0; j < m.As.join_ack.gs.players[i].numParts; j++) {
-						cout << (int)m.As.join_ack.gs.players[i].parts[j].x << ", " << (int)m.As.join_ack.gs.players[i].parts[j].y << endl;
+						//cout << (int)m.As.join_ack.gs.players[i].parts[j].x << ", " << (int)m.As.join_ack.gs.players[i].parts[j].y << endl;
 					}
 				}
 				break;
@@ -107,9 +125,9 @@ void Game::updateGame(sf::Time dt) {
 		if (m.t == Message::UPDATE) {
 			S->sync(m.As.update.gs);
 		}
-		else if (m.t == Message::KILL_BC) {
+		/*else if (m.t == Message::KILL_BC) {
 			S->kill(m.As.kill_bc.sid);
-		}
+		}*/
 	}
 }
 

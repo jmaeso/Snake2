@@ -12,6 +12,7 @@ struct Snake : public sf::Drawable
 	void update(unsigned dt);
 	void sync(SnakeData data);
 	int id;
+	bool alive;
 	bool updated;
 	std::vector<Parts*> _parts;
 };

@@ -5,6 +5,7 @@
 Snake::Snake(SnakeData& data)
 {
 	this->id = data.uID;
+	this->alive = !data.dead;
 	_parts = vector<Parts*>(0);
 	for (int i = 0; i < data.numParts; i++)
 	{
@@ -26,9 +27,11 @@ Snake::~Snake()
 
 void Snake::draw(sf::RenderTarget & target, sf::RenderStates states) const
 {
-	for (int i = 0; i < _parts.size(); i++)
-	{
-		target.draw(*_parts[i]);
+	if (this->alive){
+		for (int i = _parts.size() - 1; i >= 0; i--)
+		{
+			target.draw(*_parts[i]);
+		}
 	}
 }
 

@@ -18,6 +18,7 @@ struct Part {
 struct ServerSnake {
 	std::vector<Part> parts;
 	direction_t direction;
+	char dead;
 };
 
 struct SnakeData{
@@ -25,6 +26,7 @@ struct SnakeData{
 	int numParts;
 	Part parts[MAX_PARTS];
 	char direction;
+	char dead;
 };
 
 struct GameState {
@@ -38,9 +40,8 @@ struct Message {
 		JOIN,
 		JOIN_ACK,
 		UPDATE,
-		KILL,
-		KILL_ACK,
-		KILL_BC,
+		MOVE,
+		DEAD,
 		MAX
 	};
 	Message::Type t;
@@ -56,6 +57,9 @@ struct Message {
 		struct {
 			GameState gs;
 		} update;
+		struct{
+			direction_t direction;
+		}move;
 		struct {
 			int sid;
 		} kill;
@@ -77,8 +81,7 @@ public:
 	static Message join();
 	static Message join_ack(const std::vector<ServerSnake> &data, int id);
 	static Message update(const std::vector<ServerSnake> &data);
-	static Message kill(int sid);
-	static Message kill_ack();
-	static Message kill_bc(int sid);
+	static Message move(const direction_t &direction);
+	
 };
 

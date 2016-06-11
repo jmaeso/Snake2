@@ -46,6 +46,7 @@ void Server::run()
 					newUser.sID = game_data.size();
 					users[UUID] = newUser;
 					ServerSnake tempSnake;
+					tempSnake.dead = false;
 					tempSnake.parts = std::vector<Part>(0);
 					int div = game_data.size() % 4;
 					int x0 = (rand() % (WIDTH / 2 - MIN_PARTS)) + MIN_PARTS;
@@ -61,8 +62,8 @@ void Server::run()
 					{
 						tempSnake.parts.push_back({ (char)(x0 + i * dx), char(y0) });
 					}
-					if (dx == 1) tempSnake.direction = RIGHT;
-					else tempSnake.direction = LEFT;
+					if (dx == 1) tempSnake.direction = LEFT;
+					else tempSnake.direction = RIGHT;
 					game_data.push_back(tempSnake);
 					cout << "NEW USER Current users: " << users.size() << endl;
 				}
@@ -73,17 +74,24 @@ void Server::run()
 					if (tobroadcast.t!=Message::NONE) broadcast(UUID, tobroadcast);
 					if (res.t != Message::NONE) socket.send(Protocol::encode(res), sizeof(Message) , u->ip, u->port);
 				}
+				if (got.t == Message::MOVE) {
+					for (int i = 0; i < game_data.size(); i++)
+					{
+						if (users[UUID].sID == i) {
+							game_data[i].direction = got.As.move.direction;
+							cout << "Received " << (int)got.As.move.direction << " from " << i << endl;
+						}
+					}
+				}
 			}
 		}
 		int current = clock.getElapsedTime().asMilliseconds();
 		if (current != previous) {
 			int steps = current - previous;
 			if (users.size() > 0) {
-				for (int s = 0; s < steps; ++s) {
-					update();
-				}
 				next_update += steps;
 				if (next_update > UPDATEEVERY) {
+					update();
 					broadcastAll(Protocol::update(game_data));
 					next_update -= UPDATEEVERY;
 				}
@@ -94,22 +102,72 @@ void Server::run()
 }
 
 void Server::update()
-{/*
-	++next_move;
-	int mt = (int)(game_data.size() * 2 + EXTRA);
-	if (next_move >= mt) {
-		next_move -= mt;
-		for (unsigned i = 0; i < game_data.size(); ++i) {
-			int dir = ((game_data[i].type&SHIP_RIGHT)>0) ? 1 : -1;
-			int nx = game_data[i].x + 5 * dir;
-			if (nx<BORDER || nx>WIDTH - BORDER) {
-				game_data[i].type = (game_data[i].type&7) | (game_data[i].type ^ (SHIP_RIGHT | SHIP_LEFT));
-				dir = ((game_data[i].type&SHIP_RIGHT)>0) ? 1 : -1;
-				nx = game_data[i].x + 5 * dir;
-			}
-			game_data[i].x = nx;
+{
+	vector<vector<int> > cells(WIDTH, vector<int>(HEIGHT, -1));
+	for (int i = 0; i < game_data.size(); i++)
+	{
+		for (int j = 0; j < game_data[i].parts.size(); j++) {
+			cells[game_data[i].parts[j].x][game_data[i].parts[j].y] = i;
 		}
-	}*/
+	}
+	vector<bool> alive(game_data.size(), true);
+	for (int i = 0; i < game_data.size(); i++)
+	{
+		Part tempPart;
+		tempPart = game_data[i].parts[0];
+		switch (game_data[i].direction) {
+		case RIGHT:
+			tempPart.x += 1;
+			break;
+		case LEFT:
+			tempPart.x -= 1;
+			break;
+		case UP:
+			tempPart.y -= 1;
+			break;
+		case DOWN:
+			tempPart.y += 1;
+			break;
+		}
+		if (tempPart.x < 0) tempPart.x += WIDTH;
+		if (tempPart.y < 0) tempPart.y += HEIGHT;
+		tempPart.x = tempPart.x % WIDTH;
+		tempPart.y = tempPart.y % HEIGHT;
+		if (cells[tempPart.x][tempPart.y] != -1 && cells[tempPart.x][tempPart.y] != i) {
+			alive[cells[tempPart.x][tempPart.y]] = false;
+			game_data[i].dead = true;
+			cout << i << " kill " << cells[tempPart.x][tempPart.y] << endl;
+		}
+	}
+	for (int i = 0; i < game_data.size(); i++)
+	{
+		if (alive[i]) {
+			Part tempPart;
+			tempPart = game_data[i].parts[0];
+			switch (game_data[i].direction) {
+			case RIGHT:
+				tempPart.x += 1;
+				break;
+			case LEFT:
+				tempPart.x -= 1;
+				break;
+			case UP:
+				tempPart.y -= 1;
+				break;
+			case DOWN:
+				tempPart.y += 1;
+				break;
+			}
+			if (tempPart.x < 0) tempPart.x += WIDTH;
+			if (tempPart.y < 0) tempPart.y += HEIGHT;
+			tempPart.x = tempPart.x % WIDTH;
+			tempPart.y = tempPart.y % HEIGHT;
+			game_data[i].parts.insert(game_data[i].parts.begin(), tempPart);
+			if (cells[tempPart.x][tempPart.y] == -1 || cells[tempPart.x][tempPart.y] == i) {
+				game_data[i].parts.erase(game_data[i].parts.begin() + game_data[i].parts.size() - 1);
+			}
+		}
+	}
 }
 
 void Server::broadcast(string UUID, const Message &m)

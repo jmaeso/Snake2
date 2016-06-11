@@ -30,6 +30,7 @@ Message Protocol::join_ack(const std::vector<ServerSnake> &data, int id)
 	m.As.join_ack.snakeID = id;
 	m.As.join_ack.gs.numPlayers = data.size();
 	for (unsigned i = 0; i < data.size(); ++i) {
+		m.As.join_ack.gs.players[i].dead = data[i].dead;
 		m.As.join_ack.gs.players[i].direction = data[i].direction;
 		m.As.join_ack.gs.players[i].numParts = data[i].parts.size();
 		m.As.join_ack.gs.players[i].uID = i;
@@ -45,6 +46,7 @@ Message Protocol::update(const std::vector<ServerSnake> &data)
 	Message m = make(Message::UPDATE);
 	m.As.join_ack.gs.numPlayers = data.size();
 	for (unsigned i = 0; i < data.size(); ++i) {
+		m.As.join_ack.gs.players[i].dead = data[i].dead;
 		m.As.join_ack.gs.players[i].direction = data[i].direction;
 		m.As.join_ack.gs.players[i].numParts = data[i].parts.size();
 		m.As.join_ack.gs.players[i].uID = i;
@@ -55,22 +57,9 @@ Message Protocol::update(const std::vector<ServerSnake> &data)
 	return m;
 }
 
-Message Protocol::kill(int sid)
+Message Protocol::move(const direction_t & direction)
 {
-	Message m = make(Message::KILL);
-	m.As.kill.sid = sid;
-	return m;
-}
-
-Message Protocol::kill_ack()
-{
-	Message m = make(Message::KILL_ACK);
-	return m;
-}
-
-Message Protocol::kill_bc(int sid)
-{
-	Message m = make(Message::KILL_BC);
-	m.As.kill_bc.sid = sid;
+	Message m = make(Message::MOVE);
+	m.As.move.direction = direction;
 	return m;
 }
