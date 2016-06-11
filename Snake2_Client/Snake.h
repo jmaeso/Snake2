@@ -15,5 +15,6 @@ struct Snake : public sf::Drawable
 	bool alive;
 	bool updated;
 	std::vector<Parts*> _parts;
+	direction_t direction;
 };
 

@@ -40,4 +40,8 @@ void Snakes::kill(unsigned sid)
 
 void Snakes::SetDirection(direction_t dir)
 {
+	for (int i = 0; i < snakes.size(); i++)
+	{
+		if (snakes[i].id == playerID) { snakes[i].direction = dir; }
+	}
 }

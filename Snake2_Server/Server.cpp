@@ -53,7 +53,7 @@ void Server::run()
 					int dx = -1;
 					if (div > 1) {
 						dx = 1;
-						x0 += WIDTH / 2;
+						//x0 += WIDTH / 2;
 					}
 					int y0 = rand() % (HEIGHT / 2);
 					if (div % 2 == 1)
@@ -106,8 +106,10 @@ void Server::update()
 	vector<vector<int> > cells(WIDTH, vector<int>(HEIGHT, -1));
 	for (int i = 0; i < game_data.size(); i++)
 	{
-		for (int j = 0; j < game_data[i].parts.size(); j++) {
-			cells[game_data[i].parts[j].x][game_data[i].parts[j].y] = i;
+		if (!game_data[i].dead) {
+			for (int j = 0; j < game_data[i].parts.size(); j++) {
+				cells[game_data[i].parts[j].x][game_data[i].parts[j].y] = i;
+			}
 		}
 	}
 	vector<bool> alive(game_data.size(), true);
@@ -136,12 +138,12 @@ void Server::update()
 		if (cells[tempPart.x][tempPart.y] != -1 && cells[tempPart.x][tempPart.y] != i) {
 			alive[cells[tempPart.x][tempPart.y]] = false;
 			game_data[i].dead = true;
-			cout << i << " kill " << cells[tempPart.x][tempPart.y] << endl;
+			cout << i << " killed by " << cells[tempPart.x][tempPart.y] << endl;
 		}
 	}
 	for (int i = 0; i < game_data.size(); i++)
 	{
-		if (alive[i]) {
+		//if (alive[i]) {
 			Part tempPart;
 			tempPart = game_data[i].parts[0];
 			switch (game_data[i].direction) {
@@ -166,7 +168,7 @@ void Server::update()
 			if (cells[tempPart.x][tempPart.y] == -1 || cells[tempPart.x][tempPart.y] == i) {
 				game_data[i].parts.erase(game_data[i].parts.begin() + game_data[i].parts.size() - 1);
 			}
-		}
+		//}
 	}
 }
 

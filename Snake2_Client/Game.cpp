@@ -7,7 +7,7 @@ Game::Game()
 	width = SCREEN_WIDTH;
 	height = SCREEN_HEIGHT;
 	app.create(sf::VideoMode(width, height), "Snake", sf::Style::Titlebar|sf::Style::Close);
-	app.setFramerateLimit(60);
+	app.setFramerateLimit(30);
 	//app.setVerticalSyncEnabled(true);
 	scene = SCENE_JOINING;
 	font = sf::Font();

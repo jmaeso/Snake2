@@ -13,8 +13,9 @@ struct Parts : public sf::Drawable
 {
 	Parts(int x, int y, int snakeID, int partID, direction_t direction);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+	void SetRotation(direction_t direction);
 	~Parts();
-	direction_t direction;
+	//direction_t direction;
 	sf::Sprite sprite;
 	sf::Texture texture;
 };
