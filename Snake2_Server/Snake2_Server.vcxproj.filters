@@ -43,6 +43,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram.cd" />
+    <None Include="ClassDiagram_server.cd" />
   </ItemGroup>
 </Project>
