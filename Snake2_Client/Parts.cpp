@@ -13,7 +13,8 @@ Parts::Parts(int x, int y, int snakeID, int partID, direction_t direction)
 	sprite.setOrigin(sprite.getLocalBounds().width / 2.0f, sprite.getLocalBounds().height / 2.0f);
 	sprite.setScale((float)((SCREEN_WIDTH / WIDTH) / sprite.getLocalBounds().width) * 1.2, (float)((SCREEN_WIDTH / WIDTH) / sprite.getLocalBounds().height) * 1.2);
 	sprite.setPosition((x + 0.5f) * (float)(SCREEN_WIDTH / WIDTH), (y + 0.5f) * (float)(SCREEN_HEIGHT / HEIGHT));
-	SetRotation(direction);
+	if(partID == HEAD)
+		SetRotation(direction);
 }
 
 void Parts::draw(sf::RenderTarget & target, sf::RenderStates states) const

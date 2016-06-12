@@ -34,5 +34,10 @@ private:
 	sf::Clock deltaClock;
 	Snakes *S;
 	sf::Text joiningText;
+	sf::Texture backgroundTexture;
+	sf::Sprite backgroundSprite;
+	sf::Texture loadingTexture;
+	sf::Sprite loadingSprite;
+	int counter;
 };
 

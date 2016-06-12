@@ -30,7 +30,7 @@ void Snake::draw(sf::RenderTarget & target, sf::RenderStates states) const
 	if (this->alive){
 		for (int i = _parts.size() - 1; i >= 0; i--)
 		{
-			if (i == 0) { _parts[i]->SetRotation(direction); }
+			//if (i == 0) { _parts[i]->SetRotation(direction); }
 			target.draw(*_parts[i]);
 		}
 	}

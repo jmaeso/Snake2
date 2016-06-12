@@ -8,7 +8,7 @@ Game::Game()
 	height = SCREEN_HEIGHT;
 	app.create(sf::VideoMode(width, height), "Snake", sf::Style::Titlebar|sf::Style::Close);
 	app.setFramerateLimit(30);
-	//app.setVerticalSyncEnabled(true);
+	app.setVerticalSyncEnabled(true);
 	scene = SCENE_JOINING;
 	font = sf::Font();
 	font.loadFromFile("madpixels.otf");
@@ -16,6 +16,20 @@ Game::Game()
 	joiningText.setOrigin({ joiningText.getLocalBounds().width / 2.0f,joiningText.getLocalBounds().height / 2.0f });
 	joiningText.setPosition({ width / 2.0f,height / 2.2f });
 	joiningText.setColor(sf::Color::Red);
+
+	backgroundTexture.loadFromFile("textures/background.png");
+	backgroundSprite = sf::Sprite(backgroundTexture);
+	backgroundSprite.setOrigin(0, 0);
+	backgroundSprite.setScale(1, 1);
+	backgroundSprite.setPosition(0, 0);
+
+	loadingTexture.loadFromFile("textures/loading.png");
+	loadingSprite = sf::Sprite(loadingTexture);
+	loadingSprite.setOrigin(0, 0);
+	loadingSprite.setScale(1, 1);
+	loadingSprite.setPosition(0, 0);
+
+	counter = 0;
 	S = NULL;
 	C = new Comm(SERVERIP);
 	T = thread(&Comm::init, C);
@@ -78,12 +92,16 @@ void Game::run()
 						S->SetDirection(RIGHT);
 						C->send(Protocol::move(RIGHT));
 					}
-
 				}
 			}
 		}
 		app.clear(sf::Color(0,0,0));
 		if (scene == SCENE_JOINING) {
+			counter+= dt.asMilliseconds();
+			if (counter >= 1000) { 
+				C->send(Protocol::join()); 
+				counter = 0;
+			}
 			drawJoining();
 		}
 		else if (scene == SCENE_GAME) {
@@ -100,18 +118,11 @@ void Game::drawJoining()
 		scene = SCENE_GAME;
 	}
 	else {
-		//app.draw(joiningText);
+		app.draw(loadingSprite);
 		while (!C->empty()) {
 			Message m = C->poll();
 			if (m.t == Message::JOIN_ACK) {
 				S = new Snakes(m.As.join_ack.gs, m.As.join_ack.snakeID);
-				for (int i = 0; i < m.As.join_ack.gs.numPlayers; i++)
-				{
-					//cout << "NumPlayer: " << i << "   Direction: " << (int)m.As.join_ack.gs.players[i].direction << endl;
-					for (int j = 0; j < m.As.join_ack.gs.players[i].numParts; j++) {
-						//cout << (int)m.As.join_ack.gs.players[i].parts[j].x << ", " << (int)m.As.join_ack.gs.players[i].parts[j].y << endl;
-					}
-				}
 				break;
 			}
 		}
@@ -125,13 +136,10 @@ void Game::updateGame(sf::Time dt) {
 		if (m.t == Message::UPDATE) {
 			S->sync(m.As.update.gs);
 		}
-		/*else if (m.t == Message::KILL_BC) {
-			S->kill(m.As.kill_bc.sid);
-		}*/
 	}
 }
 
 void Game::drawGame() {
-	//cout << "p" << endl;
+	app.draw(backgroundSprite);
 	app.draw(*S);
 }

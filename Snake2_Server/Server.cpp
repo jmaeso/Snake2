@@ -36,8 +36,8 @@ void Server::run()
 		if (received != 0) {
 			Message got = Protocol::decode(in);
 			if (got.t < Message::MAX) {
-				cout << (string)sender.toString() << endl;
-					cout<< to_string(senderPort) << endl;
+				//cout << (string)sender.toString() << endl;
+					//cout<< to_string(senderPort) << endl;
 				string UUID = (string)(sender.toString() + to_string(senderPort));
 				if (got.t == Message::JOIN) {
 					User newUser;
@@ -79,7 +79,6 @@ void Server::run()
 					{
 						if (users[UUID].sID == i) {
 							game_data[i].direction = got.As.move.direction;
-							cout << "Received " << (int)got.As.move.direction << " from " << i << endl;
 						}
 					}
 				}
@@ -112,38 +111,40 @@ void Server::update()
 			}
 		}
 	}
-	vector<bool> alive(game_data.size(), true);
+	vector<bool> kill(game_data.size(), false);
 	for (int i = 0; i < game_data.size(); i++)
 	{
-		Part tempPart;
-		tempPart = game_data[i].parts[0];
-		switch (game_data[i].direction) {
-		case RIGHT:
-			tempPart.x += 1;
-			break;
-		case LEFT:
-			tempPart.x -= 1;
-			break;
-		case UP:
-			tempPart.y -= 1;
-			break;
-		case DOWN:
-			tempPart.y += 1;
-			break;
-		}
-		if (tempPart.x < 0) tempPart.x += WIDTH;
-		if (tempPart.y < 0) tempPart.y += HEIGHT;
-		tempPart.x = tempPart.x % WIDTH;
-		tempPart.y = tempPart.y % HEIGHT;
-		if (cells[tempPart.x][tempPart.y] != -1 && cells[tempPart.x][tempPart.y] != i) {
-			alive[cells[tempPart.x][tempPart.y]] = false;
-			game_data[i].dead = true;
-			cout << i << " killed by " << cells[tempPart.x][tempPart.y] << endl;
+		if (!game_data[i].dead) {
+			Part tempPart;
+			tempPart = game_data[i].parts[0];
+			switch (game_data[i].direction) {
+			case RIGHT:
+				tempPart.x += 1;
+				break;
+			case LEFT:
+				tempPart.x -= 1;
+				break;
+			case UP:
+				tempPart.y -= 1;
+				break;
+			case DOWN:
+				tempPart.y += 1;
+				break;
+			}
+			if (tempPart.x < 0) tempPart.x += WIDTH;
+			if (tempPart.y < 0) tempPart.y += HEIGHT;
+			tempPart.x = tempPart.x % WIDTH;
+			tempPart.y = tempPart.y % HEIGHT;
+			if (cells[tempPart.x][tempPart.y] != -1 && cells[tempPart.x][tempPart.y] != i) {
+				kill[cells[tempPart.x][tempPart.y]] = true;
+				game_data[i].dead = true;
+				cout << i << " killed by " << cells[tempPart.x][tempPart.y] << endl;
+			}
 		}
 	}
 	for (int i = 0; i < game_data.size(); i++)
 	{
-		//if (alive[i]) {
+		if (!game_data[i].dead) {
 			Part tempPart;
 			tempPart = game_data[i].parts[0];
 			switch (game_data[i].direction) {
@@ -165,10 +166,10 @@ void Server::update()
 			tempPart.x = tempPart.x % WIDTH;
 			tempPart.y = tempPart.y % HEIGHT;
 			game_data[i].parts.insert(game_data[i].parts.begin(), tempPart);
-			if (cells[tempPart.x][tempPart.y] == -1 || cells[tempPart.x][tempPart.y] == i) {
+			if (!kill[i]) {
 				game_data[i].parts.erase(game_data[i].parts.begin() + game_data[i].parts.size() - 1);
 			}
-		//}
+		}
 	}
 }
 
