@@ -1,11 +1,11 @@
 #include "User.h"
 
-Message User::message(const Message & m, vector<ServerSnake> &game_data, Message & broadcast)
+Message User::message(const Message & m, vector<ServerSnake> &game_data, Message & broadcast, const std::vector<Part> &food)
 {
 	Message res;
 	res.t = Message::NONE;
 	if (m.t == Message::JOIN) {
-		res = Protocol::join_ack(game_data, sID);
+		res = Protocol::join_ack(game_data, sID, food);
 	}
 	/*else if (m.t == Message::KILL) {
 		res = Protocol::kill_ack();

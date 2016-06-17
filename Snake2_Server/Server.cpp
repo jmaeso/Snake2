@@ -31,6 +31,7 @@ void Server::run()
 	sf::Clock clock;
 	int previous = clock.getElapsedTime().asMilliseconds();
 	game_data = vector<ServerSnake>(0);
+	food = vector<Part>(0);
 	while (true) {
 		sf::Socket::Status s = socket.receive(in, sizeof(in), received, sender, senderPort);
 		if (received != 0) {
@@ -70,7 +71,7 @@ void Server::run()
 				if (users.count(UUID)>0) {
 					User *u = &users[UUID];
 					Message tobroadcast=Protocol::make(Message::NONE);
-					Message res = u->message(got,game_data, tobroadcast);
+					Message res = u->message(got,game_data, tobroadcast, food);
 					if (tobroadcast.t!=Message::NONE) broadcast(UUID, tobroadcast);
 					if (res.t != Message::NONE) socket.send(Protocol::encode(res), sizeof(Message) , u->ip, u->port);
 				}
@@ -91,7 +92,7 @@ void Server::run()
 				next_update += steps;
 				if (next_update > UPDATEEVERY) {
 					update();
-					broadcastAll(Protocol::update(game_data));
+					broadcastAll(Protocol::update(game_data, food));
 					next_update -= UPDATEEVERY;
 				}
 			}
@@ -111,13 +112,33 @@ void Server::update()
 			}
 		}
 	}
+	if (food.size() < MAX_FOOD && rand() % 20 == 1) {
+		int x = rand() % WIDTH;
+		int y = rand() % HEIGHT;
+		while (cells[x][y] != -1)
+		{
+			x = rand() % WIDTH;
+			y = rand() % HEIGHT;
+		}
+		food.push_back({(char)x, (char)y});
+		cout << food.size() << endl;
+	}
+	for (int i = 0; i < food.size(); i++)
+	{
+		cells[food[i].x][food[i].y] = -2-i;
+	}
 	vector<bool> kill(game_data.size(), false);
 	for (int i = 0; i < game_data.size(); i++)
 	{
 		if (!game_data[i].dead) {
 			Part tempPart;
 			tempPart = game_data[i].parts[0];
-			switch (game_data[i].direction) {
+			if (game_data[i].direction & RIGHT) { tempPart.x += 1; } // AND logica bit a bit
+			else if (game_data[i].direction & LEFT) { tempPart.x -= 1; }
+			else if (game_data[i].direction & UP) { tempPart.y -= 1; }
+			else if (game_data[i].direction & DOWN) { tempPart.y += 1; }
+
+			/*switch (game_data[i].direction) {
 			case RIGHT:
 				tempPart.x += 1;
 				break;
@@ -130,12 +151,12 @@ void Server::update()
 			case DOWN:
 				tempPart.y += 1;
 				break;
-			}
+			}*/
 			if (tempPart.x < 0) tempPart.x += WIDTH;
 			if (tempPart.y < 0) tempPart.y += HEIGHT;
 			tempPart.x = tempPart.x % WIDTH;
 			tempPart.y = tempPart.y % HEIGHT;
-			if (cells[tempPart.x][tempPart.y] != -1 && cells[tempPart.x][tempPart.y] != i) {
+			if (cells[tempPart.x][tempPart.y] > -1 && cells[tempPart.x][tempPart.y] != i) {
 				kill[cells[tempPart.x][tempPart.y]] = true;
 				game_data[i].dead = true;
 				cout << i << " killed by " << cells[tempPart.x][tempPart.y] << endl;
@@ -147,26 +168,25 @@ void Server::update()
 		if (!game_data[i].dead) {
 			Part tempPart;
 			tempPart = game_data[i].parts[0];
-			switch (game_data[i].direction) {
-			case RIGHT:
-				tempPart.x += 1;
-				break;
-			case LEFT:
-				tempPart.x -= 1;
-				break;
-			case UP:
-				tempPart.y -= 1;
-				break;
-			case DOWN:
-				tempPart.y += 1;
-				break;
-			}
+
+			if (game_data[i].direction & RIGHT) { tempPart.x += 1; } // AND logica bit a bit
+			else if (game_data[i].direction & LEFT) { tempPart.x -= 1; }
+			else if (game_data[i].direction & UP) { tempPart.y -= 1; }
+			else if (game_data[i].direction & DOWN) { tempPart.y += 1; }
+
 			if (tempPart.x < 0) tempPart.x += WIDTH;
 			if (tempPart.y < 0) tempPart.y += HEIGHT;
 			tempPart.x = tempPart.x % WIDTH;
 			tempPart.y = tempPart.y % HEIGHT;
 			game_data[i].parts.insert(game_data[i].parts.begin(), tempPart);
-			if (!kill[i]) {
+			if (cells[tempPart.x][tempPart.y] < -1) {
+				int foodID = abs(cells[tempPart.x][tempPart.y] + 2 );
+				food.erase(food.begin() + foodID);
+			}
+			else if (!kill[i]) {
+				game_data[i].parts.erase(game_data[i].parts.begin() + game_data[i].parts.size() - 1);
+			}
+			if (game_data[i].parts.size() > MAX_PARTS) {
 				game_data[i].parts.erase(game_data[i].parts.begin() + game_data[i].parts.size() - 1);
 			}
 		}

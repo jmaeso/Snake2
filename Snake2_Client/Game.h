@@ -6,6 +6,7 @@
 #include <thread>
 #include "Comm.h"
 #include "Snakes.h"
+#include "Objects.h"
 
 using namespace std;
 
@@ -33,6 +34,7 @@ private:
 	thread T;
 	sf::Clock deltaClock;
 	Snakes *S;
+	Objects *O;
 	sf::Text joiningText;
 	sf::Texture backgroundTexture;
 	sf::Sprite backgroundSprite;

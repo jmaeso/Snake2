@@ -20,17 +20,18 @@ Game::Game()
 	backgroundTexture.loadFromFile("textures/background.png");
 	backgroundSprite = sf::Sprite(backgroundTexture);
 	backgroundSprite.setOrigin(0, 0);
-	backgroundSprite.setScale(1, 1);
+	backgroundSprite.setScale((float)((SCREEN_WIDTH) / backgroundSprite.getLocalBounds().width), (float)((SCREEN_HEIGHT) / backgroundSprite.getLocalBounds().height));
 	backgroundSprite.setPosition(0, 0);
 
 	loadingTexture.loadFromFile("textures/loading.png");
 	loadingSprite = sf::Sprite(loadingTexture);
 	loadingSprite.setOrigin(0, 0);
-	loadingSprite.setScale(1, 1);
+	loadingSprite.setScale((float)((SCREEN_WIDTH) / loadingSprite.getLocalBounds().width), (float)((SCREEN_HEIGHT) / loadingSprite.getLocalBounds().height));
 	loadingSprite.setPosition(0, 0);
 
 	counter = 0;
 	S = NULL;
+	O = NULL;
 	C = new Comm(SERVERIP);
 	T = thread(&Comm::init, C);
 	C->send(Protocol::join());
@@ -46,6 +47,7 @@ Game::~Game()
 		delete C;
 	}
 	if (S != NULL) delete S;
+	if (O != NULL) delete O;
 }
 
 void Game::run()
@@ -123,6 +125,7 @@ void Game::drawJoining()
 			Message m = C->poll();
 			if (m.t == Message::JOIN_ACK) {
 				S = new Snakes(m.As.join_ack.gs, m.As.join_ack.snakeID);
+				O = new Objects(m.As.join_ack.gs.food, m.As.join_ack.gs.numFood);
 				break;
 			}
 		}
@@ -135,6 +138,7 @@ void Game::updateGame(sf::Time dt) {
 		Message m = C->poll();
 		if (m.t == Message::UPDATE) {
 			S->sync(m.As.update.gs);
+			O->sync(m.As.update.gs.food, m.As.update.gs.numFood);
 		}
 	}
 }
@@ -142,4 +146,5 @@ void Game::updateGame(sf::Time dt) {
 void Game::drawGame() {
 	app.draw(backgroundSprite);
 	app.draw(*S);
+	app.draw(*O);
 }

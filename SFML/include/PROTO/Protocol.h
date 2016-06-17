@@ -4,11 +4,12 @@
 #include <iostream>
 
 const unsigned MAX_PLAYERS = 4;
-const unsigned MAX_PARTS = 55;
+const unsigned MAX_PARTS = 35;
+const unsigned MAX_FOOD = 10;
 const unsigned WIDTH = 40;
 const unsigned HEIGHT = 30;
 
-enum direction_t {RIGHT, LEFT, UP, DOWN, MAX_DIR};
+enum direction_t {RIGHT = 1, LEFT = 2, UP = 4, DOWN = 8};
 
 struct Part {
 	char x;
@@ -25,13 +26,15 @@ struct SnakeData{
 	int uID;
 	int numParts;
 	Part parts[MAX_PARTS];
-	char direction;
+	direction_t direction;
 	char dead;
 };
 
 struct GameState {
 	int numPlayers;
+	int numFood;
 	SnakeData players[MAX_PLAYERS];
+	Part food[MAX_FOOD];
 };
 
 struct Message {
@@ -79,9 +82,9 @@ public:
 	static const char* encode(const Message &m);
 	static Message make(Message::Type type);
 	static Message join();
-	static Message join_ack(const std::vector<ServerSnake> &data, int id);
-	static Message update(const std::vector<ServerSnake> &data);
-	static Message move(const direction_t &direction);
+	static Message join_ack(const std::vector<ServerSnake> &data, int id, const std::vector<Part> &food);
+	static Message update(const std::vector<ServerSnake> &data, const std::vector<Part> &food);
+	static Message move(const direction_t direction);
 	
 };
 

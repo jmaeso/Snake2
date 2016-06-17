@@ -30,5 +30,6 @@ private:
 	unsigned port;
 	unordered_map<string,User> users;
 	vector<ServerSnake> game_data;
+	vector<Part> food;
 };
 

@@ -24,7 +24,11 @@ void Parts::draw(sf::RenderTarget & target, sf::RenderStates states) const
 
 void Parts::SetRotation(direction_t direction)
 {
-	switch (direction)
+	if (direction & RIGHT) { sprite.setRotation(270); } // AND logica bit a bit
+	else if (direction & LEFT) { sprite.setRotation(90); }
+	else if (direction & UP) { sprite.setRotation(180); }
+	else if (direction & DOWN) { sprite.setRotation(0); }
+	/*switch (direction)
 	{
 	case RIGHT:
 		sprite.setRotation(270);
@@ -38,11 +42,9 @@ void Parts::SetRotation(direction_t direction)
 	case DOWN:
 		sprite.setRotation(0);
 		break;
-	case MAX_DIR:
-		break;
 	default:
 		break;
-	}
+	}*/
 }
 
 Parts::~Parts()
