@@ -121,7 +121,6 @@ void Server::update()
 			y = rand() % HEIGHT;
 		}
 		food.push_back({(char)x, (char)y});
-		cout << food.size() << endl;
 	}
 	for (int i = 0; i < food.size(); i++)
 	{
